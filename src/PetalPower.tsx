@@ -94,6 +94,45 @@ export function PetalPower() {
   const addLayerToMap = useCallback(() => {
     if (!geojsonData || !selectedDateColumn || !selectedCountColumn) return;
 
+    const style = {
+      config: {
+        labelAttribute: [selectedDateColumn],
+        numericAttribute: selectedDateColumn,
+        steps: { type: "equal-intervals", count: 6 }
+      },
+      legend: { displayName: "auto" },
+      paint: {
+        color: PETAL_COLORS,
+        iconFrame: "none",
+        iconImage: "water",
+        maplibreLayoutProperties: {
+          "icon-offset": [0, 5],
+          "icon-rotate": ["get", selectedDateColumn],
+          "icon-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            ["*", ["get", selectedCountColumn], 0.1],
+            6,
+            ["*", ["get", selectedCountColumn], 0.4],
+            9,
+            ["*", ["get", selectedCountColumn], 0.6],
+            12,
+            ["*", ["get", selectedCountColumn], 0.8],
+            15,
+            ["get", selectedCountColumn]
+          ]
+        },
+        opacity: 0.6,
+        size: 4,
+        strokeColor: "auto",
+        strokeWidth: 0
+      },
+      type: "numeric",
+      version: "2.3.1"
+    };
+
     const encoder = new TextEncoder();
     const uint8Array = encoder.encode(JSON.stringify(geojsonData));
     const arrayBuffer = uint8Array.buffer;
@@ -103,6 +142,9 @@ export function PetalPower() {
         type: "application/geo+json",
         name: "Petal Power Data",
         arrayBuffer,
+        geometryStyles: {
+          Point: style
+        },
       },
     });
   }, [felt, geojsonData, selectedDateColumn, selectedCountColumn]);
