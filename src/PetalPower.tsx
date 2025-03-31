@@ -1,4 +1,4 @@
-import { Box, Text, VStack, HStack } from "@chakra-ui/react";
+import { Box, Text, VStack, HStack, Button, Input } from "@chakra-ui/react";
 import { useFelt } from "./utils/context";
 import { useState, useCallback, useEffect } from "react";
 import { FeatureCollection, Feature } from "geojson";
@@ -42,11 +42,7 @@ export function PetalPower() {
     }));
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-
+  const processFile = useCallback(async (file: File) => {
     const text = await file.text();
     const json = JSON.parse(text) as FeatureCollection;
     setGeojsonData(json);
@@ -73,6 +69,19 @@ export function PetalPower() {
 
     setColumns(Array.from(columnMap.values()));
   }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    await processFile(file);
+  }, [processFile]);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await processFile(file);
+  }, [processFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -231,18 +240,36 @@ export function PetalPower() {
       </Text>
 
       {columns.length === 0 ? (
-        <Box
-          border="2px dashed"
-          borderColor="gray.300"
-          borderRadius="md"
-          p={8}
-          width="100%"
-          textAlign="center"
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-        >
-          <Text>Please drag in a GeoJSON file with point data</Text>
-        </Box>
+        <VStack width="100%" gap={4}>
+          <Box
+            border="2px dashed"
+            borderColor="gray.300"
+            borderRadius="md"
+            p={8}
+            width="100%"
+            textAlign="center"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+          >
+            <Text>Drag in a GeoJSON file with point data</Text>
+            <Text fontSize="sm" color="gray.500">or</Text>
+            <Input
+              type="file"
+              accept=".geojson,application/geo+json"
+              onChange={handleFileSelect}
+              display="none"
+              id="file-upload"
+            />
+            <Button
+              onClick={() => document.getElementById('file-upload')?.click()}
+              colorScheme="blue"
+              size="sm"
+              mt={2}
+            >
+              Select File
+            </Button>
+          </Box>
+        </VStack>
       ) : (
         <VStack width="100%" gap={4}>
           <Box width="100%">
