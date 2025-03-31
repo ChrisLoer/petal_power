@@ -235,9 +235,27 @@ export function PetalPower() {
       borderRadius="md"
       boxShadow="md"
     >
-      <Text fontSize="xl" fontWeight="bold">
-        Petal Power
-      </Text>
+      <HStack width="100%" justifyContent="space-between" alignItems="center">
+        <Text fontSize="xl" fontWeight="bold">
+          Petal Power
+        </Text>
+        {columns.length > 0 && (
+          <Button
+            size="sm"
+            variant="ghost"
+            colorScheme="gray"
+            onClick={() => {
+              setColumns([]);
+              setSelectedDateColumn("");
+              setSelectedCountColumn("");
+              setGeojsonData(null);
+              setIntervals([]);
+            }}
+          >
+            Reset
+          </Button>
+        )}
+      </HStack>
 
       {columns.length === 0 ? (
         <VStack width="100%" gap={4}>
