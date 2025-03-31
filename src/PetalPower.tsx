@@ -119,7 +119,7 @@ export function PetalPower() {
       config: {
         labelAttribute: [selectedDateColumn],
         numericAttribute: selectedDateColumn,
-        steps: intervals.map(interval => interval.min).push(max)
+        steps: intervals.map(interval => interval.min).concat(max)
       },
       legend: { displayName: "auto" },
       paint: {
