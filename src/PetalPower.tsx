@@ -1,4 +1,4 @@
-import { Box, Text, VStack, HStack, useToast } from "@chakra-ui/react";
+import { Box, Text, VStack, HStack } from "@chakra-ui/react";
 import { useFelt } from "./utils/context";
 import { useState, useCallback, useEffect } from "react";
 import { FeatureCollection, Feature } from "geojson";
@@ -26,7 +26,6 @@ type Interval = {
 
 export function PetalPower() {
   const felt = useFelt();
-  const toast = useToast();
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [selectedDateColumn, setSelectedDateColumn] = useState<string>("");
   const [selectedCountColumn, setSelectedCountColumn] = useState<string>("");
@@ -185,14 +184,8 @@ export function PetalPower() {
     const uint8Array = encoder.encode(JSON.stringify(geojsonData));
     const arrayBuffer = uint8Array.buffer;
 
-    toast({
-      title: "Adding layer...",
-      description: "Creating the Petal Power visualization",
-      status: "loading",
-      duration: null,
-      isClosable: false,
-      id: "layer-toast"
-    });
+    // Show loading message
+    alert("Creating the Petal Power visualization...");
 
     felt.createLayer({
       source: {
@@ -206,27 +199,13 @@ export function PetalPower() {
     })
     .then((result) => {
       console.log("Layer created successfully:", result);
-      toast.close("layer-toast");
-      toast({
-        title: "Layer added!",
-        description: "The Petal Power visualization has been added to the map",
-        status: "success",
-        duration: 3000,
-        isClosable: true
-      });
+      alert("The Petal Power visualization has been added to the map");
     })
     .catch((error) => {
       console.error("Error creating layer:", error);
-      toast.close("layer-toast");
-      toast({
-        title: "Error adding layer",
-        description: error.message || "There was an error creating the visualization",
-        status: "error",
-        duration: 5000,
-        isClosable: true
-      });
+      alert(error.message || "There was an error creating the visualization");
     });
-  }, [felt, geojsonData, selectedDateColumn, selectedCountColumn, columns, toast]);
+  }, [felt, geojsonData, selectedDateColumn, selectedCountColumn, columns]);
 
   // When both columns are selected, add the layer
   useEffect(() => {
