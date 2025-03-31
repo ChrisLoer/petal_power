@@ -212,8 +212,8 @@ export function PetalPower() {
     })
     .then((result) => {
       console.log("Layer created successfully:", result);
-      if (result?.id) {
-        setCurrentLayerId(result.id);
+      if (result?.layerIds[0]) {
+        setCurrentLayerId(result.layerIds[0]);
       }
     })
     .catch((error) => {
