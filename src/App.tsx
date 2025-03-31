@@ -3,7 +3,7 @@ import { FeltContext } from "./utils/context";
 import { useFeltEmbed } from "./utils/useFeltEmbed";
 import { Map } from "./Map";
 import { Box, Theme } from "@chakra-ui/react";
-import { Info } from "./Info";
+import { PetalPower } from "./PetalPower";
 
 export default function App() {
   const { felt, mapRef } = useFeltEmbed(MAP_ID, {
@@ -25,7 +25,7 @@ export default function App() {
         {felt && (
           <FeltContext.Provider value={felt}>
             <Box zIndex={1} position="relative" p="4">
-              <Info />
+              <PetalPower />
             </Box>
           </FeltContext.Provider>
         )}
