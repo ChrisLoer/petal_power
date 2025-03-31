@@ -131,6 +131,7 @@ export function PetalPower() {
           "icon-rotate": [
             "step",
             ["get", selectedDateColumn],
+            0,
             ...intervals.flatMap(interval => [interval.min, interval.rotation])
           ],
           "icon-size": [
