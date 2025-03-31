@@ -1,12 +1,27 @@
-import { Box, Text, VStack } from "@chakra-ui/react";
+import { Box, Text, VStack, HStack } from "@chakra-ui/react";
 import { useFelt } from "./utils/context";
 import { useState, useCallback, useEffect } from "react";
 import { FeatureCollection, Feature } from "geojson";
+
+const PETAL_COLORS = [
+  "rgb(219, 60, 147)",
+  "rgb(250, 158, 50)",
+  "rgb(254, 206, 6)",
+  "rgb(156, 190, 77)",
+  "rgb(6, 165, 170)",
+  "rgb(133, 115, 167)"
+];
 
 type ColumnInfo = {
   name: string;
   min: number | null;
   max: number | null;
+};
+
+type Interval = {
+  min: number;
+  max: number;
+  color: string;
 };
 
 export function PetalPower() {
@@ -15,6 +30,17 @@ export function PetalPower() {
   const [selectedDateColumn, setSelectedDateColumn] = useState<string>("");
   const [selectedCountColumn, setSelectedCountColumn] = useState<string>("");
   const [geojsonData, setGeojsonData] = useState<FeatureCollection | null>(null);
+  const [intervals, setIntervals] = useState<Interval[]>([]);
+
+  const calculateIntervals = useCallback((min: number, max: number) => {
+    const range = max - min;
+    const intervalSize = range / 6;
+    return PETAL_COLORS.map((color, index) => ({
+      min: min + intervalSize * index,
+      max: min + intervalSize * (index + 1),
+      color
+    }));
+  }, []);
 
   const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -51,6 +77,18 @@ export function PetalPower() {
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   }, []);
+
+  // Update intervals when date column changes
+  useEffect(() => {
+    if (selectedDateColumn) {
+      const dateColumn = columns.find(col => col.name === selectedDateColumn);
+      if (dateColumn && dateColumn.min !== null && dateColumn.max !== null) {
+        setIntervals(calculateIntervals(dateColumn.min, dateColumn.max));
+      }
+    } else {
+      setIntervals([]);
+    }
+  }, [selectedDateColumn, columns, calculateIntervals]);
 
   // Add layer to map when both columns are selected
   const addLayerToMap = useCallback(() => {
@@ -124,6 +162,20 @@ export function PetalPower() {
               ))}
             </select>
           </Box>
+
+          {intervals.length > 0 && (
+            <VStack width="100%" gap={2} p={2} bg="gray.50" borderRadius="md">
+              <Text fontSize="sm" fontWeight="medium">Date Ranges:</Text>
+              {intervals.map((interval, index) => (
+                <HStack key={index} width="100%" gap={3}>
+                  <Box width="20px" height="20px" bg={interval.color} borderRadius="sm" />
+                  <Text fontSize="sm">
+                    {interval.min.toFixed(2)} - {interval.max.toFixed(2)}
+                  </Text>
+                </HStack>
+              ))}
+            </VStack>
+          )}
 
           <Box width="100%">
             <select
