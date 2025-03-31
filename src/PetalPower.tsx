@@ -325,6 +325,23 @@ export function PetalPower() {
               ))}
             </select>
           </Box>
+
+          {selectedCountColumn && (
+            <VStack width="100%" gap={2} p={2} bg="gray.50" borderRadius="md">
+              <Text fontSize="sm" fontWeight="medium">Count Range:</Text>
+              {(() => {
+                const countCol = columns.find(col => col.name === selectedCountColumn);
+                if (countCol && countCol.min !== null && countCol.max !== null) {
+                  return (
+                    <Text fontSize="sm">
+                      Min: {Math.floor(countCol.min)} - Max: {Math.floor(countCol.max)}
+                    </Text>
+                  );
+                }
+                return null;
+              })()}
+            </VStack>
+          )}
         </VStack>
       )}
     </VStack>
