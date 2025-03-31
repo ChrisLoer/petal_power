@@ -31,6 +31,7 @@ export function PetalPower() {
   const [selectedCountColumn, setSelectedCountColumn] = useState<string>("");
   const [geojsonData, setGeojsonData] = useState<FeatureCollection | null>(null);
   const [intervals, setIntervals] = useState<Interval[]>([]);
+  const [currentLayerId, setCurrentLayerId] = useState<string | null>(null);
 
   const calculateIntervals = useCallback((min: number, max: number) => {
     const range = max - min;
@@ -211,6 +212,9 @@ export function PetalPower() {
     })
     .then((result) => {
       console.log("Layer created successfully:", result);
+      if (result?.id) {
+        setCurrentLayerId(result.id);
+      }
     })
     .catch((error) => {
       console.error("Error creating layer:", error);
@@ -245,11 +249,17 @@ export function PetalPower() {
             variant="ghost"
             colorScheme="gray"
             onClick={() => {
+              if (currentLayerId) {
+                felt.deleteLayer(currentLayerId).catch(error => {
+                  console.error("Error deleting layer:", error);
+                });
+              }
               setColumns([]);
               setSelectedDateColumn("");
               setSelectedCountColumn("");
               setGeojsonData(null);
               setIntervals([]);
+              setCurrentLayerId(null);
             }}
           >
             Reset
