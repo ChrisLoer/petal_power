@@ -1,4 +1,4 @@
-import { Box, Text, VStack, HStack } from "@chakra-ui/react";
+import { Box, Text, VStack, HStack, useToast } from "@chakra-ui/react";
 import { useFelt } from "./utils/context";
 import { useState, useCallback, useEffect } from "react";
 import { FeatureCollection, Feature } from "geojson";
@@ -26,6 +26,7 @@ type Interval = {
 
 export function PetalPower() {
   const felt = useFelt();
+  const toast = useToast();
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [selectedDateColumn, setSelectedDateColumn] = useState<string>("");
   const [selectedCountColumn, setSelectedCountColumn] = useState<string>("");
@@ -94,6 +95,16 @@ export function PetalPower() {
   const addLayerToMap = useCallback(() => {
     if (!geojsonData || !selectedDateColumn || !selectedCountColumn) return;
 
+    const dateColumn = columns.find(col => col.name === selectedDateColumn);
+    if (!dateColumn || dateColumn.min === null || dateColumn.max === null) return;
+
+    const countColumn = columns.find(col => col.name === selectedCountColumn);
+    if (!countColumn || countColumn.max === null) return;
+
+    const maxCount = countColumn.max;
+    const range = dateColumn.max - dateColumn.min;
+    const intervalSize = range / 6;
+
     const style = {
       config: {
         labelAttribute: [selectedDateColumn],
@@ -107,21 +118,58 @@ export function PetalPower() {
         iconImage: "water",
         maplibreLayoutProperties: {
           "icon-offset": [0, 5],
-          "icon-rotate": ["get", selectedDateColumn],
+          "icon-rotate": [
+            "step",
+            ["get", selectedDateColumn],
+            0,                                              // Default rotation
+            dateColumn.min + intervalSize,     0,          // First interval
+            dateColumn.min + intervalSize * 2, 60,         // Second interval
+            dateColumn.min + intervalSize * 3, 120,        // Third interval
+            dateColumn.min + intervalSize * 4, 180,        // Fourth interval
+            dateColumn.min + intervalSize * 5, 240,        // Fifth interval
+            dateColumn.max,                    300         // Sixth interval
+          ],
           "icon-size": [
             "interpolate",
             ["linear"],
             ["zoom"],
             3,
-            ["*", ["get", selectedCountColumn], 0.1],
+            ["*", 
+              ["/",
+                ["sqrt", ["get", selectedCountColumn]],
+                ["sqrt", maxCount]
+              ],
+              0.1
+            ],
             6,
-            ["*", ["get", selectedCountColumn], 0.4],
+            ["*", 
+              ["/",
+                ["sqrt", ["get", selectedCountColumn]],
+                ["sqrt", maxCount]
+              ],
+              0.4
+            ],
             9,
-            ["*", ["get", selectedCountColumn], 0.6],
+            ["*", 
+              ["/",
+                ["sqrt", ["get", selectedCountColumn]],
+                ["sqrt", maxCount]
+              ],
+              0.6
+            ],
             12,
-            ["*", ["get", selectedCountColumn], 0.8],
+            ["*", 
+              ["/",
+                ["sqrt", ["get", selectedCountColumn]],
+                ["sqrt", maxCount]
+              ],
+              0.8
+            ],
             15,
-            ["get", selectedCountColumn]
+            ["/",
+              ["sqrt", ["get", selectedCountColumn]],
+              ["sqrt", maxCount]
+            ]
           ]
         },
         opacity: 0.6,
@@ -137,6 +185,15 @@ export function PetalPower() {
     const uint8Array = encoder.encode(JSON.stringify(geojsonData));
     const arrayBuffer = uint8Array.buffer;
 
+    toast({
+      title: "Adding layer...",
+      description: "Creating the Petal Power visualization",
+      status: "loading",
+      duration: null,
+      isClosable: false,
+      id: "layer-toast"
+    });
+
     felt.createLayer({
       source: {
         type: "application/geo+json",
@@ -146,8 +203,30 @@ export function PetalPower() {
           Point: style
         },
       },
+    })
+    .then((result) => {
+      console.log("Layer created successfully:", result);
+      toast.close("layer-toast");
+      toast({
+        title: "Layer added!",
+        description: "The Petal Power visualization has been added to the map",
+        status: "success",
+        duration: 3000,
+        isClosable: true
+      });
+    })
+    .catch((error) => {
+      console.error("Error creating layer:", error);
+      toast.close("layer-toast");
+      toast({
+        title: "Error adding layer",
+        description: error.message || "There was an error creating the visualization",
+        status: "error",
+        duration: 5000,
+        isClosable: true
+      });
     });
-  }, [felt, geojsonData, selectedDateColumn, selectedCountColumn]);
+  }, [felt, geojsonData, selectedDateColumn, selectedCountColumn, columns, toast]);
 
   // When both columns are selected, add the layer
   useEffect(() => {
