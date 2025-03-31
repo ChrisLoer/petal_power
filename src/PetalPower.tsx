@@ -102,13 +102,24 @@ export function PetalPower() {
 
     const maxCount = countColumn.max;
     const range = dateColumn.max - dateColumn.min;
-    const intervalSize = range / 6;
+    const intervalCount = PETAL_COLORS.length;
+    const intervalSize = range / intervalCount;
+
+    // Since we know dateColumn.min is not null at this point, we can safely use it
+    const min = dateColumn.min;
+    const max = dateColumn.max;
+    const intervals = Array.from({ length: intervalCount }, (_, i) => ({
+      min: min + intervalSize * i,
+      max: min + intervalSize * (i + 1),
+      color: PETAL_COLORS[i],
+      rotation: (360 / intervalCount) * i
+    }));
 
     const style = {
       config: {
         labelAttribute: [selectedDateColumn],
         numericAttribute: selectedDateColumn,
-        steps: { type: "equal-intervals", count: 6 }
+        steps: intervals.map(interval => interval.min).push(max)
       },
       legend: { displayName: "auto" },
       paint: {
@@ -120,13 +131,7 @@ export function PetalPower() {
           "icon-rotate": [
             "step",
             ["get", selectedDateColumn],
-            0,                                              // Default rotation
-            dateColumn.min + intervalSize,     0,          // First interval
-            dateColumn.min + intervalSize * 2, 60,         // Second interval
-            dateColumn.min + intervalSize * 3, 120,        // Third interval
-            dateColumn.min + intervalSize * 4, 180,        // Fourth interval
-            dateColumn.min + intervalSize * 5, 240,        // Fifth interval
-            dateColumn.max,                    300         // Sixth interval
+            ...intervals.flatMap(interval => [interval.min, interval.rotation])
           ],
           "icon-size": [
             "interpolate",
@@ -138,7 +143,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              0.1
+              10
             ],
             6,
             ["*", 
@@ -146,7 +151,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              0.4
+              40
             ],
             9,
             ["*", 
@@ -154,7 +159,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              0.6
+              60
             ],
             12,
             ["*", 
@@ -162,7 +167,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              0.8
+              80
             ],
             15,
             ["/",
@@ -184,9 +189,6 @@ export function PetalPower() {
     const uint8Array = encoder.encode(JSON.stringify(geojsonData));
     const arrayBuffer = uint8Array.buffer;
 
-    // Show loading message
-    alert("Creating the Petal Power visualization...");
-
     felt.createLayer({
       source: {
         type: "application/geo+json",
@@ -199,7 +201,6 @@ export function PetalPower() {
     })
     .then((result) => {
       console.log("Layer created successfully:", result);
-      alert("The Petal Power visualization has been added to the map");
     })
     .catch((error) => {
       console.error("Error creating layer:", error);
