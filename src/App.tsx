@@ -24,7 +24,7 @@ export default function App() {
 
         {felt && (
           <FeltContext.Provider value={felt}>
-            <Box zIndex={1} position="relative" p="4">
+            <Box zIndex={1} position="fixed" p="4">
               <PetalPower />
             </Box>
           </FeltContext.Provider>

@@ -153,7 +153,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              10
+              5
             ],
             6,
             ["*", 
@@ -161,7 +161,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              40
+              20
             ],
             9,
             ["*", 
@@ -169,7 +169,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              60
+              30
             ],
             12,
             ["*", 
@@ -177,7 +177,7 @@ export function PetalPower() {
                 ["sqrt", ["get", selectedCountColumn]],
                 ["sqrt", maxCount]
               ],
-              80
+              40
             ],
             15,
             ["/",
@@ -299,7 +299,7 @@ export function PetalPower() {
                 <HStack key={index} width="100%" gap={3}>
                   <Box width="20px" height="20px" bg={interval.color} borderRadius="sm" />
                   <Text fontSize="sm">
-                    {interval.min.toFixed(2)} - {interval.max.toFixed(2)}
+                    {Math.floor(interval.min)} - {Math.floor(interval.max)}
                   </Text>
                 </HStack>
               ))}
