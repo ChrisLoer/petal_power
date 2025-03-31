@@ -138,12 +138,12 @@ export function PetalPower() {
         iconImage: "water",
         maplibreLayoutProperties: {
           "icon-offset": [0, 5],
-          "icon-rotate": [
+          "icon-rotate": ["+", 180, [
             "step",
             ["get", selectedDateColumn],
             0,
             ...intervals.flatMap(interval => [interval.min, interval.rotation])
-          ],
+          ]],
           "icon-size": [
             "interpolate",
             ["linear"],
