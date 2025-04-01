@@ -16,7 +16,7 @@ export function Color() {
   useEffect(() => {
     // Fetch layers when component mounts
     felt.getLayers().then((fetchedLayers) => {
-      // Filter out null values and cast to Layer[]
+      // Filter out null values
       const validLayers = fetchedLayers.filter((layer): layer is Layer => layer !== null);
       setLayers(validLayers);
     });
@@ -47,8 +47,38 @@ export function Color() {
     setIsLoading(true);
     
     try {
-      console.log("Coloring layer:", selectedLayer, "by column:", selectedColumn);
-      // Color logic will be implemented later
+      // Get the current layer to access its style
+      const layer = await felt.getLayer(selectedLayer);
+      if (!layer) throw new Error("Layer not found");
+
+      const currentStyle = layer.style as { paint: any };
+      const currentPaint = Array.isArray(currentStyle.paint) ? currentStyle.paint[0] : currentStyle.paint;
+
+      // Add color properties to the paint's maplibreLayoutProperties
+      const updatedPaint = {
+        ...currentPaint,
+        maplibrePaintProperties: {
+          ...currentPaint.maplibrePaintProperties,
+          "icon-color": ["get", selectedColumn],
+          "fill-color": ["get", selectedColumn],
+          "circle-color": ["get", selectedColumn],
+          "line-color": ["get", selectedColumn],
+          "text-color": ["get", selectedColumn]
+        }
+      };
+
+      // Update the style with the color properties
+      await felt.setLayerStyle({
+        id: selectedLayer,
+        style: {
+          ...currentStyle,
+          paint: Array.isArray(currentStyle.paint) 
+            ? [updatedPaint, ...currentStyle.paint.slice(1)]
+            : updatedPaint
+        }
+      });
+
+      console.log("Added color properties to layer:", selectedLayer, "using column:", selectedColumn);
     } catch (error) {
       console.error("Error coloring layer:", error);
     } finally {
