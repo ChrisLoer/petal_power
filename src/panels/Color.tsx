@@ -1,7 +1,8 @@
-import { VStack, Text, Button } from "@chakra-ui/react";
+import { VStack, Text, Button, HStack } from "@chakra-ui/react";
 import { useFelt } from "../utils/context";
 import { useState, useEffect } from "react";
 import { Layer, LayerSchema } from "@feltmaps/js-sdk";
+import { useLayerStyle } from "../utils/useLayerStyle";
 
 export function Color() {
   const felt = useFelt();
@@ -9,6 +10,8 @@ export function Color() {
   const [selectedColumn, setSelectedColumn] = useState("");
   const [layers, setLayers] = useState<Layer[]>([]);
   const [columns, setColumns] = useState<LayerSchema["attributes"]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { originalStyle, isResetting, saveOriginalStyle, resetStyle } = useLayerStyle();
 
   useEffect(() => {
     // Fetch layers when component mounts
@@ -19,13 +22,15 @@ export function Color() {
     });
   }, [felt]);
 
-  // When a layer is selected, fetch its schema
+  // When layer selection changes, fetch its schema and save original style
   useEffect(() => {
     if (!selectedLayer) {
       setColumns([]);
       setSelectedColumn("");
       return;
     }
+
+    saveOriginalStyle(selectedLayer);
 
     felt.getLayerSchema(selectedLayer).then((schema) => {
       // Include numeric and text attributes for coloring
@@ -35,12 +40,26 @@ export function Color() {
       setColumns(validAttributes);
       setSelectedColumn(""); // Reset column selection
     });
-  }, [felt, selectedLayer]);
+  }, [felt, selectedLayer, saveOriginalStyle]);
 
-  const handleColor = () => {
+  const handleColor = async () => {
     if (!selectedLayer || !selectedColumn) return;
-    console.log("Coloring layer:", selectedLayer, "by column:", selectedColumn);
-    // Color logic will be implemented later
+    setIsLoading(true);
+    
+    try {
+      console.log("Coloring layer:", selectedLayer, "by column:", selectedColumn);
+      // Color logic will be implemented later
+    } catch (error) {
+      console.error("Error coloring layer:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    if (selectedLayer) {
+      resetStyle(selectedLayer);
+    }
   };
 
   return (
@@ -94,14 +113,25 @@ export function Color() {
         ))}
       </select>
 
-      <Button 
-        colorScheme="blue" 
-        width="100%" 
-        onClick={handleColor}
-        disabled={!selectedLayer || !selectedColumn}
-      >
-        Color by this value
-      </Button>
+      <HStack width="100%" gap={4}>
+        <Button 
+          colorScheme="blue" 
+          flex="1"
+          onClick={handleColor}
+          disabled={!selectedLayer || !selectedColumn || isLoading || isResetting}
+          loading={isLoading}
+        >
+          Color by this value
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleReset}
+          disabled={!selectedLayer || !originalStyle || isLoading || isResetting}
+          loading={isResetting}
+        >
+          Reset
+        </Button>
+      </HStack>
     </VStack>
   );
 } 

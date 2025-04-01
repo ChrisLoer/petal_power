@@ -1,13 +1,15 @@
-import { VStack, Text, Button } from "@chakra-ui/react";
+import { VStack, Text, Button, HStack } from "@chakra-ui/react";
 import { useFelt } from "../utils/context";
 import { useState, useEffect } from "react";
 import { Layer } from "@feltmaps/js-sdk";
+import { useLayerStyle } from "../utils/useLayerStyle";
 
 export function DropShadow() {
   const felt = useFelt();
   const [selectedLayer, setSelectedLayer] = useState("");
   const [layers, setLayers] = useState<Layer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { originalStyle, isResetting, saveOriginalStyle, resetStyle } = useLayerStyle();
 
   useEffect(() => {
     // Fetch layers when component mounts
@@ -19,6 +21,13 @@ export function DropShadow() {
       setLayers(validLayers);
     });
   }, [felt]);
+
+  // When layer selection changes, save its original style
+  useEffect(() => {
+    if (selectedLayer) {
+      saveOriginalStyle(selectedLayer);
+    }
+  }, [selectedLayer, saveOriginalStyle]);
 
   const handleAddShadow = async () => {
     if (!selectedLayer) return;
@@ -59,6 +68,12 @@ export function DropShadow() {
     }
   };
 
+  const handleReset = () => {
+    if (selectedLayer) {
+      resetStyle(selectedLayer);
+    }
+  };
+
   return (
     <VStack
       bg="white"
@@ -91,15 +106,25 @@ export function DropShadow() {
         ))}
       </select>
 
-      <Button 
-        colorScheme="blue" 
-        width="100%" 
-        onClick={handleAddShadow}
-        disabled={!selectedLayer || isLoading}
-        loading={isLoading}
-      >
-        Add Drop Shadow
-      </Button>
+      <HStack width="100%" gap={4}>
+        <Button 
+          colorScheme="blue" 
+          flex="1"
+          onClick={handleAddShadow}
+          disabled={!selectedLayer || isLoading || isResetting}
+          loading={isLoading}
+        >
+          Add Drop Shadow
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleReset}
+          disabled={!selectedLayer || !originalStyle || isLoading || isResetting}
+          loading={isResetting}
+        >
+          Reset
+        </Button>
+      </HStack>
     </VStack>
   );
 } 
