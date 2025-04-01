@@ -2,8 +2,11 @@ import { MAP_ID } from "./utils/consts";
 import { FeltContext } from "./utils/context";
 import { useFeltEmbed } from "./utils/useFeltEmbed";
 import { Map } from "./Map";
-import { Box, Theme } from "@chakra-ui/react";
+import { Box, Theme, VStack } from "@chakra-ui/react";
 import { PetalPower } from "./PetalPower";
+import { DropShadow } from "./panels/DropShadow";
+import { Rotation } from "./panels/Rotation";
+import { Color } from "./panels/Color";
 
 export default function App() {
   const { felt, mapRef } = useFeltEmbed(MAP_ID, {
@@ -25,7 +28,12 @@ export default function App() {
         {felt && (
           <FeltContext.Provider value={felt}>
             <Box zIndex={1} position="fixed" p="4">
-              <PetalPower />
+              <VStack gap={4} align="stretch">
+                <PetalPower />
+                <DropShadow />
+                <Rotation />
+                <Color />
+              </VStack>
             </Box>
           </FeltContext.Provider>
         )}
