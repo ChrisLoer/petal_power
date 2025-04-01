@@ -16,8 +16,14 @@ export function Rotation() {
   useEffect(() => {
     // Fetch layers when component mounts
     felt.getLayers().then((fetchedLayers) => {
-      // Filter out null values and cast to Layer[]
-      const validLayers = fetchedLayers.filter((layer): layer is Layer => layer !== null);
+      // Filter out null values and only keep Point layers with iconImage
+      const validLayers = fetchedLayers.filter((layer): layer is Layer => {
+        if (!layer || layer.geometryType !== "Point") return false;
+        
+        const style = layer.style as { paint: any };
+        const paint = Array.isArray(style.paint) ? style.paint[0] : style.paint;
+        return paint && paint.iconImage;
+      });
       setLayers(validLayers);
     });
   }, [felt]);
@@ -47,8 +53,34 @@ export function Rotation() {
     setIsLoading(true);
     
     try {
-      console.log("Rotating layer:", selectedLayer, "by column:", selectedColumn);
-      // Rotation logic will be implemented later
+      // Get the current layer to access its style
+      const layer = await felt.getLayer(selectedLayer);
+      if (!layer) throw new Error("Layer not found");
+
+      const currentStyle = layer.style as { paint: any };
+      const currentPaint = Array.isArray(currentStyle.paint) ? currentStyle.paint[0] : currentStyle.paint;
+
+      // Add rotation to the paint's maplibreLayoutProperties
+      const updatedPaint = {
+        ...currentPaint,
+        maplibreLayoutProperties: {
+          ...currentPaint.maplibreLayoutProperties,
+          "icon-rotate": ["to-number", ["get", selectedColumn]]
+        }
+      };
+
+      // Update the style with the rotation
+      await felt.setLayerStyle({
+        id: selectedLayer,
+        style: {
+          ...currentStyle,
+          paint: Array.isArray(currentStyle.paint) 
+            ? [updatedPaint, ...currentStyle.paint.slice(1)]
+            : updatedPaint
+        }
+      });
+
+      console.log("Added rotation to layer:", selectedLayer, "using column:", selectedColumn);
     } catch (error) {
       console.error("Error rotating layer:", error);
     } finally {
@@ -86,7 +118,7 @@ export function Rotation() {
           border: "1px solid #E2E8F0"
         }}
       >
-        <option value="">Select layer</option>
+        <option value="">Select point layer with icon</option>
         {layers.map(layer => (
           <option key={layer.id} value={layer.id}>
             {layer.name}
