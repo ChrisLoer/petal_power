@@ -1,13 +1,14 @@
 import { VStack, Text, Button } from "@chakra-ui/react";
 import { useFelt } from "../utils/context";
 import { useState, useEffect } from "react";
-import { Layer } from "@feltmaps/js-sdk";
+import { Layer, LayerSchema } from "@feltmaps/js-sdk";
 
 export function Rotation() {
   const felt = useFelt();
   const [selectedLayer, setSelectedLayer] = useState("");
   const [selectedColumn, setSelectedColumn] = useState("");
   const [layers, setLayers] = useState<Layer[]>([]);
+  const [columns, setColumns] = useState<LayerSchema["attributes"]>([]);
 
   useEffect(() => {
     // Fetch layers when component mounts
@@ -18,12 +19,23 @@ export function Rotation() {
     });
   }, [felt]);
 
-  // Placeholder columns for now
-  const columns = [
-    { id: "col1", name: "Rotation Angle" },
-    { id: "col2", name: "Direction" },
-    { id: "col3", name: "Orientation" }
-  ];
+  // When a layer is selected, fetch its schema
+  useEffect(() => {
+    if (!selectedLayer) {
+      setColumns([]);
+      setSelectedColumn("");
+      return;
+    }
+
+    felt.getLayerSchema(selectedLayer).then((schema) => {
+      // Only include numeric attributes for rotation
+      const numericAttributes = schema.attributes.filter(
+        attr => attr.type === "numeric"
+      );
+      setColumns(numericAttributes);
+      setSelectedColumn(""); // Reset column selection
+    });
+  }, [felt, selectedLayer]);
 
   const handleRotate = () => {
     if (!selectedLayer || !selectedColumn) return;
@@ -72,11 +84,12 @@ export function Rotation() {
           borderRadius: "6px",
           border: "1px solid #E2E8F0"
         }}
+        disabled={!selectedLayer}
       >
         <option value="">Select column</option>
         {columns.map(column => (
           <option key={column.id} value={column.id}>
-            {column.name}
+            {column.id}
           </option>
         ))}
       </select>
