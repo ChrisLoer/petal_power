@@ -14,8 +14,7 @@ export default function App() {
       cooperativeGestures: false,
       fullScreenButton: false,
       showLegend: false,
-    },
-    origin: "https://felt-pr-14477.onrender.com/"
+    }
   });
 
   return (
