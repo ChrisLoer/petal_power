@@ -60,11 +60,11 @@ export function Rotation() {
       const currentStyle = layer.style as { paint: any };
       const currentPaint = Array.isArray(currentStyle.paint) ? currentStyle.paint[0] : currentStyle.paint;
 
-      // Add rotation to the paint's maplibreLayoutProperties
+      // Add rotation to the paint's layoutPropertyOverrides
       const updatedPaint = {
         ...currentPaint,
-        maplibreLayoutProperties: {
-          ...currentPaint.maplibreLayoutProperties,
+        layoutPropertyOverrides: {
+          ...currentPaint.layoutPropertyOverrides,
           "icon-rotate": ["to-number", ["get", selectedColumn]]
         }
       };

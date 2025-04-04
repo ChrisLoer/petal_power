@@ -46,7 +46,7 @@ export function DropShadow() {
       // Create the shadow style
       const shadowStyle = {
         color: "black",
-        maplibrePaintProperties: {
+        paintPropertyOverrides: {
           "fill-translate": [3, 3]
         }
       };

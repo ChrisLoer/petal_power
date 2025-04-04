@@ -54,11 +54,11 @@ export function Color() {
       const currentStyle = layer.style as { paint: any };
       const currentPaint = Array.isArray(currentStyle.paint) ? currentStyle.paint[0] : currentStyle.paint;
 
-      // Add color properties to the paint's maplibreLayoutProperties
+      // Add color properties to the paint's layoutPropertyOverrides
       const updatedPaint = {
         ...currentPaint,
-        maplibrePaintProperties: {
-          ...currentPaint.maplibrePaintProperties,
+        paintPropertyOverrides: {
+          ...currentPaint.paintPropertyOverrides,
           "icon-color": ["get", selectedColumn],
           "fill-color": ["get", selectedColumn],
           "circle-color": ["get", selectedColumn],

@@ -136,7 +136,7 @@ export function PetalPower() {
         color: PETAL_COLORS,
         iconFrame: "none",
         iconImage: "water",
-        maplibreLayoutProperties: {
+        layoutPropertyOverrides: {
           "icon-offset": [0, 5],
           "icon-rotate": ["+", 180, [
             "step",
